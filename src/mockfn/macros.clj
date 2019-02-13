@@ -4,18 +4,26 @@
 (defn- as-redefs
   [func->definition]
   (->> func->definition
-       (map (fn [[func definition]] [func `(mock/mock ~func ~definition)]))
+       (map (fn [[func definition]] [func `(mock/mock ~(:function definition)
+                                                      ~definition)]))
        (apply concat)))
+
+(defn- handle-private [func]
+  (if (and (seq? func)
+           (= 'var (first func)))
+    (second func)
+    func))
 
 (defn- func->spec
   [bindings]
   (reduce
-    (fn [acc [[func & args] ret-val & times-expected]]
-      (-> acc
-          (assoc-in [func :function] func)
-          (assoc-in [func :return-values (into [] args)] ret-val)
-          (assoc-in [func :times-called (into [] args)] `(atom 0))
-          (assoc-in [func :times-expected (into [] args)] (into [] times-expected))))
+    (fn [acc [[raw-func & args] ret-val & times-expected]]
+      (let [func (handle-private raw-func)]
+        (-> acc
+            (assoc-in [func :function] raw-func)
+            (assoc-in [func :return-values (into [] args)] ret-val)
+            (assoc-in [func :times-called (into [] args)] `(atom 0))
+            (assoc-in [func :times-expected (into [] args)] (into [] times-expected)))))
     {} bindings))
 
 (defn calling
