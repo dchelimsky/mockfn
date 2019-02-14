@@ -1,7 +1,8 @@
 (ns mockfn.macros-test
   (:require [clojure.test :refer :all]
             [mockfn.macros :as macros]
-            [mockfn.matchers :as matchers])
+            [mockfn.matchers :as matchers]
+            [mockfn.private-functions :as private-functions])
   (:import (clojure.lang ExceptionInfo Keyword)))
 
 (def one-fn)
@@ -81,3 +82,14 @@
           (macros/verifying
             [(one-fn) :one-fn (matchers/exactly 2)]
             (is (= :one-fn (one-fn))))))))
+
+(deftest private-mocking
+  (testing "you can use providing with private variables"
+    (macros/providing [(#'private-functions/private-inc 2) 1]
+      (is (= 1
+             (private-functions/call-private-inc 2)))))
+
+  (testing "you can use verifying with private variables"
+    (macros/verifying [(#'private-functions/private-inc 2) 1 (matchers/exactly 1)]
+      (is (= 1
+             (private-functions/call-private-inc 2))))))

@@ -48,9 +48,9 @@
   (format "Expected %s with arguments %s %s, received %s."
           function args (matchers/description matcher) times-called))
 
-(defn verify [mock]
-  (doseq [args    (-> mock meta :times-expected keys)
-          matcher (-> mock meta :times-expected (get args))]
-    (let [times-called (-> mock meta :times-called (get args) deref)]
+(defn verify [mock-spec]
+  (doseq [args    (-> mock-spec :times-expected keys)
+          matcher (-> mock-spec :times-expected (get args))]
+    (let [times-called (-> mock-spec :times-called (get args) deref)]
       (when-not (matchers/matches? matcher times-called)
-        (throw (ex-info (doesnt-match (-> mock meta :function) args matcher times-called) {}))))))
+        (throw (ex-info (doesnt-match (-> mock-spec :function) args matcher times-called) {}))))))

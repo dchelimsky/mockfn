@@ -42,4 +42,4 @@
   (let [specs# (->> bindings (partition 3) func->spec)]
     `(with-redefs ~(as-redefs specs#)
        ~@body
-       (doseq [mock# (keys ~specs#)] (mock/verify mock#)))))
+       (doseq [mock-spec# ~(vals specs#)] (mock/verify mock-spec#)))))
